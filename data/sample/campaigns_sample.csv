@@ -1,0 +1,11 @@
+campaign_id,name,start_date,end_date,duration_days,total_budget
+4,Campaign_4_Summer,2025-06-04,2025-08-08,65,45326.6
+9,Campaign_9_Launch,2025-05-25,2025-07-13,49,40094.07
+13,Campaign_13_Winter,2025-04-19,2025-07-01,73,21855.42
+17,Campaign_17_Launch,2025-04-22,2025-07-18,87,86675.92
+25,Campaign_25_Winter,2025-06-07,2025-09-04,89,52725.49
+33,Campaign_33_Summer,2025-04-08,2025-07-04,87,59264.68
+37,Campaign_37_Launch,2025-05-18,2025-08-01,75,46445.2
+42,Campaign_42_Summer,2025-06-08,2025-07-25,47,7918.04
+46,Campaign_46_Winter,2025-05-10,2025-08-07,89,94023.76
+47,Campaign_47_Launch,2025-06-17,2025-09-03,78,69493.36
