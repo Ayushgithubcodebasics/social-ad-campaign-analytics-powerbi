@@ -1,0 +1,64 @@
+ad_id,campaign_id,ad_platform,ad_type,target_gender,target_age_group,target_interests
+2,33,Facebook,Stories,All,25-34,"travel, photography"
+6,33,Facebook,Video,Male,25-34,"finance, health"
+7,9,Facebook,Image,Female,18-24,"fashion, gaming"
+8,13,Facebook,Carousel,All,25-34,technology
+10,17,Facebook,Stories,Female,18-24,art
+11,37,Facebook,Carousel,All,35-44,fashion
+23,33,Facebook,Image,All,18-24,news
+26,42,Facebook,Image,Female,All,"gaming, health"
+27,4,Instagram,Video,Female,All,"health, fashion"
+36,37,Facebook,Video,Male,18-24,"gaming, health"
+37,46,Facebook,Carousel,All,35-44,"gaming, travel"
+47,17,Instagram,Image,Female,35-44,"fitness, sports"
+48,42,Facebook,Carousel,All,All,"finance, lifestyle"
+53,13,Facebook,Stories,Female,25-34,sports
+64,33,Facebook,Stories,Female,18-24,news
+65,4,Facebook,Stories,Female,All,finance
+68,17,Facebook,Image,All,18-24,sports
+69,13,Facebook,Stories,Female,18-24,health
+70,42,Facebook,Stories,Female,18-24,"travel, technology"
+73,47,Facebook,Stories,Female,25-34,fitness
+74,17,Instagram,Image,Female,18-24,"finance, lifestyle"
+75,37,Facebook,Stories,Female,18-24,news
+77,4,Facebook,Stories,Male,35-44,"fashion, photography"
+79,17,Instagram,Carousel,Female,25-34,"travel, art"
+80,46,Facebook,Stories,Male,35-44,lifestyle
+91,37,Facebook,Video,All,18-24,"travel, gaming"
+92,4,Facebook,Carousel,Female,35-44,gaming
+101,42,Facebook,Video,All,18-24,art
+102,46,Facebook,Image,All,25-34,"food, fashion"
+105,25,Instagram,Image,All,35-44,art
+107,25,Instagram,Carousel,All,25-34,fashion
+108,37,Facebook,Carousel,Male,18-24,photography
+111,42,Facebook,Stories,Female,All,lifestyle
+116,4,Facebook,Video,All,All,lifestyle
+117,42,Facebook,Stories,All,18-24,"finance, travel"
+120,17,Facebook,Image,Male,All,news
+121,25,Facebook,Video,Male,35-44,news
+123,33,Facebook,Carousel,All,18-24,"finance, sports"
+127,47,Facebook,Stories,Female,All,"gaming, travel"
+131,17,Facebook,Image,Male,25-34,photography
+134,25,Facebook,Image,Female,All,"health, gaming"
+135,47,Instagram,Stories,Male,18-24,sports
+146,4,Facebook,Video,Female,All,gaming
+153,46,Facebook,Video,All,18-24,photography
+156,33,Instagram,Video,Female,18-24,"fitness, health"
+159,13,Instagram,Stories,All,25-34,"finance, travel"
+160,42,Instagram,Stories,All,25-34,"news, art"
+164,25,Instagram,Stories,Male,25-34,fashion
+167,42,Instagram,Carousel,All,25-34,art
+169,17,Facebook,Video,Female,All,art
+171,13,Instagram,Stories,Male,All,health
+172,9,Facebook,Stories,Female,18-24,fitness
+173,47,Facebook,Stories,Male,All,"gaming, food"
+176,13,Instagram,Video,All,25-34,technology
+177,46,Instagram,Carousel,Female,35-44,travel
+180,47,Instagram,Image,Male,18-24,"finance, sports"
+181,37,Instagram,Stories,Male,35-44,"gaming, art"
+186,9,Facebook,Carousel,All,All,fitness
+188,9,Instagram,Image,Female,18-24,"sports, health"
+190,33,Facebook,Image,Male,18-24,"photography, technology"
+192,47,Facebook,Carousel,Female,35-44,fashion
+195,9,Instagram,Carousel,Female,35-44,"technology, fashion"
+197,9,Facebook,Stories,All,All,"lifestyle, gaming"
