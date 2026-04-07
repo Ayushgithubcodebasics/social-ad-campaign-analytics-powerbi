@@ -24,9 +24,7 @@ Field-level reference for all four tables in the model.
 | `start_date` | date | campaign start (format: DD-MM-YYYY in source) |
 | `end_date` | date | campaign end |
 | `duration_days` | integer | days between start and end |
-| `total_budget` | decimal | total allocated budget in USD — campaign grain only |
-
-`total_budget` is the one to watch. It's a campaign-level figure and only makes sense when aggregated from the campaigns table directly. Joining it down to ads or events and summing inflates the number by 4× or 8,071× respectively. See [`docs/data_audit.md`](data_audit.md) for the full breakdown.
+| `total_budget` | decimal | total allocated budget in USD — campaign grain only. This is the one to be careful with: joining it down to ads or events and summing inflates it by 4× or 8,071× respectively. See [`docs/data_audit.md`](data_audit.md). |
 
 ---
 
@@ -36,13 +34,13 @@ Field-level reference for all four tables in the model.
 |---|---|---|
 | `ad_id` | integer | primary key |
 | `campaign_id` | integer | foreign key to campaigns |
-| `ad_platform` | string | `Facebook` or `Instagram` |
+| `ad_platform` | string | `Facebook` or `Instagram` — page-level filters in the report use this field |
 | `ad_type` | string | `Image`, `Video`, `Stories`, or `Carousel` |
 | `target_gender` | string | `Male`, `Female`, or `All` — what the ad was targeting, not actual user gender |
 | `target_age_group` | string | e.g. `18-24`, `25-34`, `35-44` |
 | `target_interests` | string | comma-separated interest categories |
 
-`ad_platform` is how the report separates Facebook and Instagram — page-level filters on this field. `target_gender` comes from this table, so gender breakdowns reflect ad targeting strategy, not the actual gender of users who engaged (those come from the users table).
+`target_gender` comes from this table. The actual gender of users who engaged comes from the users table. They don't match — female-targeted ads account for 43.4% of targeting allocation, but 55.2% of actual engagers are male.
 
 ---
 
@@ -50,15 +48,13 @@ Field-level reference for all four tables in the model.
 
 | Column | Type | Notes |
 |---|---|---|
-| `user_id` | string | primary key — note: 225 IDs stored as scientific notation in source (`1.20E+01`), causing a 5% join gap with ad_events |
-| `user_gender` | string | `Male`, `Female`, or `Other` — actual user gender |
+| `user_id` | string | primary key — 406 IDs are corrupted in source: 289 converted to scientific notation by Excel (`50e00` → `5.00E+01`) and 117 with leading zeros stripped (`00062` → `62`). These cause a 5.01% join gap with ad_events. |
+| `user_gender` | string | `Male`, `Female`, or `Other` |
 | `user_age` | integer | exact age in years |
 | `age_group` | string | banded bucket: `16-17`, `18-24`, `25-34`, `35-44`, `45-54`, `55-65` |
 | `country` | string | user's country |
 | `location` | string | city/location within country |
 | `interests` | string | comma-separated interest categories |
-
-The distinction between `target_gender` (ads table) and `user_gender` (users table) is meaningful. In this dataset, female-targeted ads dominate targeting allocation (43.4% of engagements), but actual male users are the majority of engagers (54.4%). These two fields measure different things.
 
 ---
 
@@ -68,10 +64,10 @@ The distinction between `target_gender` (ads table) and `user_gender` (users tab
 |---|---|---|
 | `event_id` | integer | primary key |
 | `ad_id` | integer | foreign key to ads |
-| `user_id` | string | foreign key to users — 5.01% have no match due to the scientific notation issue |
-| `timestamp` | datetime | when the event occurred (format: `YYYY-MM-DD HH:MM:SS`) |
-| `day_of_week` | string | derived field, e.g. `Monday` — present in source, not recalculated |
-| `time_of_day` | string | `Morning`, `Afternoon`, `Evening`, or `Night` — derived field |
+| `user_id` | string | foreign key to users — 5.01% have no match due to both Excel artifacts described above (scientific notation + leading-zero stripping) |
+| `timestamp` | datetime | when the event occurred (`YYYY-MM-DD HH:MM:SS`) |
+| `day_of_week` | string | pre-computed in source, not recalculated in Power Query |
+| `time_of_day` | string | `Morning`, `Afternoon`, `Evening`, or `Night` — pre-computed in source |
 | `event_type` | string | type of interaction — see below |
 
 **Event types:**
@@ -79,12 +75,10 @@ The distinction between `target_gender` (ads table) and `user_gender` (users tab
 |---|---|---|
 | `Impression` | 339,812 | ad was displayed |
 | `Click` | 40,079 | user clicked the ad |
-| `Like` | 12,013 | user liked the ad |
+| `Like` | 12,013 | user liked the ad — tracked separately, excluded from Engagements |
 | `Comment` | 4,108 | user commented |
 | `Share` | 1,957 | user shared the ad |
 | `Purchase` | 2,031 | user made a purchase |
-
-`Like` is tracked separately in the dashboard but excluded from the Engagements measure (defined as Clicks + Comments + Shares only).
 
 ---
 
