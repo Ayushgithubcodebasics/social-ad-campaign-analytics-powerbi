@@ -117,19 +117,26 @@ check_join(ads,    campaigns, "campaign_id", "ads",    "campaigns")
 unmatched_users = check_join(events, users, "user_id", "ad_events", "users")
 
 if unmatched_users > 0:
-    # Check for scientific notation
+    # Check for scientific notation (Excel silently converts hex IDs containing 'e')
     sci_ids = users[users["user_id"].astype(str).str.match(r"^[\d.]+[Ee][+\-]?\d+$")]
-    print(f"\n  Root cause check — scientific notation user IDs: {len(sci_ids):,}")
-    if len(sci_ids) > 0:
-        print(f"  Sample: {list(sci_ids['user_id'].head(3))}")
-        print(f"  Impact: {unmatched_users:,} events excluded from demographic breakdowns.")
-        print(f"  These events still count in impression/click/purchase totals.")
+    # Check for leading-zero-stripped IDs (Excel treats all-numeric IDs as integers)
+    lead_ids = users[users["user_id"].astype(str).str.match(r"^\d{1,4}$")]
+    total_corrupt = len(sci_ids) + len(lead_ids)
+    print(f"\n  Root cause — TWO Excel CSV-opening artifacts in users.csv:")
+    print(f"    Artifact A — Scientific notation conversion : {len(sci_ids):,} IDs")
+    print(f"    Sample: {list(sci_ids['user_id'].head(3))}")
+    print(f"    Artifact B — Leading-zero stripping         : {len(lead_ids):,} IDs")
+    print(f"    Sample: {list(lead_ids['user_id'].head(3))}")
+    print(f"    Total corrupted user IDs                   : {total_corrupt:,} ({len(sci_ids)} sci-notation + {len(lead_ids)} leading-zero-stripped)")
+    print(f"  Impact: {unmatched_users:,} events excluded from demographic breakdowns.")
+    print(f"  These events still count in impression/click/purchase totals.")
 
 print()
 print("  Full source reference:")
 print("    ad_events → ads       : 100.00% ✅")
 print("    ads → campaigns       : 100.00% ✅")
-print("    ad_events → users     : 94.99%  ⚠️  20,046 unmatched  (225 sci-notation user IDs)")
+print("    ad_events → users     : 94.99%  ⚠️  20,046 unmatched")
+print("      Root cause: 289 sci-notation + 117 leading-zero-stripped = 406 corrupted user IDs")
 
 # ── 4. Campaign window validation ─────────────────────────────────────────────
 print("\n[4] CAMPAIGN WINDOW VALIDATION")
@@ -189,32 +196,45 @@ plat_counts = ev_ads["ad_platform"].value_counts()
 for plat, n in plat_counts.items():
     print(f"  {plat}: {n:>8,}  ({n/len(ev_ads):.1%})")
 
-# ── 8. Quick KPI check ────────────────────────────────────────────────────────
-print("\n[8] KPI SPOT-CHECK (Facebook events only)")
+# ── 8. Per-platform KPI check (Comments/Shares verified per platform) ─────────
+print("\n[8] KPI SPOT-CHECK — PER PLATFORM (verified against raw data)")
 
-fb = ev_ads[ev_ads["ad_platform"] == "Facebook"]
-imp  = (fb["event_type"] == "Impression").sum()
-clk  = (fb["event_type"] == "Click").sum()
-pur  = (fb["event_type"] == "Purchase").sum()
-com  = (fb["event_type"] == "Comment").sum()
-shr  = (fb["event_type"] == "Share").sum()
-eng  = clk + com + shr
-ctr  = clk / imp  if imp else 0
-er   = eng / imp  if imp else 0
-cvr  = pur / clk  if clk else 0
-pr   = pur / imp  if imp else 0
+for platform in ["Facebook", "Instagram"]:
+    pf = ev_ads[ev_ads["ad_platform"] == platform]
+    p_imp = (pf["event_type"] == "Impression").sum()
+    p_clk = (pf["event_type"] == "Click").sum()
+    p_pur = (pf["event_type"] == "Purchase").sum()
+    p_com = (pf["event_type"] == "Comment").sum()
+    p_shr = (pf["event_type"] == "Share").sum()
+    p_lik = (pf["event_type"] == "Like").sum()
+    p_eng = p_clk + p_com + p_shr
+    p_ctr = p_clk / p_imp if p_imp else 0
+    p_er  = p_eng / p_imp if p_imp else 0
+    p_cvr = p_pur / p_clk if p_clk else 0
+    p_pr  = p_pur / p_imp if p_imp else 0
+    print(f"\n  {platform.upper()}")
+    print(f"  Impressions    : {p_imp:>10,}")
+    print(f"  Clicks         : {p_clk:>10,}")
+    print(f"  Comments       : {p_com:>10,}   (excluded from Engagements? No — included)")
+    print(f"  Shares         : {p_shr:>10,}   (included in Engagements)")
+    print(f"  Likes          : {p_lik:>10,}   (tracked; excluded from Engagements)")
+    print(f"  Purchases      : {p_pur:>10,}")
+    print(f"  Engagements    : {p_eng:>10,}   (Clicks + Comments + Shares)")
+    print(f"  CTR            : {p_ctr:>10.2%}")
+    print(f"  Engagement Rate: {p_er:>10.2%}")
+    print(f"  Conversion Rate: {p_cvr:>10.2%}")
+    print(f"  Purchase Rate  : {p_pr:>10.2%}")
 
-print(f"  Impressions    : {imp:>10,}")
-print(f"  Clicks         : {clk:>10,}")
-print(f"  Engagements    : {eng:>10,}")
-print(f"  Purchases      : {pur:>10,}")
-print(f"  CTR            : {ctr:>10.2%}")
-print(f"  Engagement Rate: {er:>10.2%}")
-print(f"  Conversion Rate: {cvr:>10.2%}")
-print(f"  Purchase Rate  : {pr:>10.2%}")
 print()
-print("  Full source reference: 215,972 / 25,389 / 29,296 / 1,323")
+print("  Full source reference (Facebook)  : 215,972 imp / 25,389 clk / 2,632 com / 1,275 shr / 29,296 eng / 1,323 pur")
 print("  CTR=11.76%  ER=13.56%  CVR=5.21%  PR=0.61%")
+print("  Full source reference (Instagram) : 123,840 imp / 14,690 clk / 1,476 com /   682 shr / 16,848 eng /   708 pur")
+print("  CTR=11.86%  ER=13.60%  CVR=4.82%  PR=0.57%")
+print()
+print("  NOTE: Earlier versions of this script and the README incorrectly stated")
+print("  FB Comments=2,680 / IG Comments=1,428 / FB Shares=1,227 / IG Shares=730.")
+print("  Correct values: FB Comments=2,632 / IG Comments=1,476 / FB Shares=1,275 / IG Shares=682.")
+print("  Combined totals (4,108 comments / 1,957 shares) are unaffected.")
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 print()
