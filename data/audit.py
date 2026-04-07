@@ -10,8 +10,6 @@ Usage:
 
 Run from the repo root. The script auto-detects the full raw data in
 data/raw/ and falls back to data/sample/ if raw files aren't present.
-
-Full source results (400k events) are shown in comments throughout.
 """
 
 import pandas as pd
@@ -20,9 +18,9 @@ import os
 import sys
 import argparse
 import warnings
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore")  # suppresses pandas DtypeWarning on mixed-type CSVs
 
-# ── Argument parsing ──────────────────────────────────────────────────────────
+# --- argument parsing ---
 parser = argparse.ArgumentParser(description="Meta Ad Campaign data audit")
 group  = parser.add_mutually_exclusive_group()
 group.add_argument("--raw",    action="store_true", help="Use full raw dataset")
@@ -50,7 +48,7 @@ else:
         DATA_DIR  = SAMPLE_DIR
         DATA_LABEL = "SAMPLE"
 
-# ── Load ──────────────────────────────────────────────────────────────────────
+# --- load ---
 print("=" * 65)
 print(f"META AD CAMPAIGN — DATA AUDIT  [{DATA_LABEL}]")
 print("=" * 65)
@@ -66,16 +64,14 @@ try:
 except FileNotFoundError as e:
     sys.exit(f"\nFile not found: {e}\nRun from the repo root: python data/audit.py")
 
-# ── 1. Row counts ─────────────────────────────────────────────────────────────
+# --- 1. row counts ---
 print("\n[1] ROW COUNTS")
 print(f"  ad_events : {len(events):>10,}")
 print(f"  ads       : {len(ads):>10,}")
 print(f"  campaigns : {len(campaigns):>10,}")
 print(f"  users     : {len(users):>10,}")
-print()
-print("  Full source reference: 400,000 / 200 / 50 / 9,841")
 
-# ── 2. Primary key uniqueness ─────────────────────────────────────────────────
+# --- 2. primary key uniqueness ---
 print("\n[2] PRIMARY KEY UNIQUENESS")
 
 pk_checks = [
@@ -98,7 +94,7 @@ for label, df, col in pk_checks:
 if all_ok:
     print("  → All primary keys clean.")
 
-# ── 3. Foreign key / join coverage ────────────────────────────────────────────
+# --- 3. foreign key / join coverage ---
 print("\n[3] JOIN COVERAGE")
 
 def check_join(left, right, key, left_label, right_label):
@@ -117,9 +113,9 @@ check_join(ads,    campaigns, "campaign_id", "ads",    "campaigns")
 unmatched_users = check_join(events, users, "user_id", "ad_events", "users")
 
 if unmatched_users > 0:
-    # Check for scientific notation (Excel silently converts hex IDs containing 'e')
+    # Excel scientific notation: 50e00 -> 5.00E+01 (PBI doesn't warn you, join just silently fails)
     sci_ids = users[users["user_id"].astype(str).str.match(r"^[\d.]+[Ee][+\-]?\d+$")]
-    # Check for leading-zero-stripped IDs (Excel treats all-numeric IDs as integers)
+    # Leading zeros stripped: 00062 -> 62
     lead_ids = users[users["user_id"].astype(str).str.match(r"^\d{1,4}$")]
     total_corrupt = len(sci_ids) + len(lead_ids)
     print(f"\n  Root cause — TWO Excel CSV-opening artifacts in users.csv:")
@@ -131,14 +127,7 @@ if unmatched_users > 0:
     print(f"  Impact: {unmatched_users:,} events excluded from demographic breakdowns.")
     print(f"  These events still count in impression/click/purchase totals.")
 
-print()
-print("  Full source reference:")
-print("    ad_events → ads       : 100.00% ✅")
-print("    ads → campaigns       : 100.00% ✅")
-print("    ad_events → users     : 94.99%  ⚠️  20,046 unmatched")
-print("      Root cause: 289 sci-notation + 117 leading-zero-stripped = 406 corrupted user IDs")
-
-# ── 4. Campaign window validation ─────────────────────────────────────────────
+# --- 4. campaign window validation ---
 print("\n[4] CAMPAIGN WINDOW VALIDATION")
 print("    Are event timestamps inside their linked campaign's active dates?")
 
@@ -157,12 +146,10 @@ pct_outside = outside / len(ev_c) * 100
 flag = "✅" if outside == 0 else f"⚠️  {outside:,} rows ({pct_outside:.1f}%)"
 print(f"  Events outside campaign window: {flag}")
 print()
-print("  Full source: 225,406 events (56.4%) fall outside their campaign window.")
-print("  Likely cause: events were collected over a broader window (May–Aug 2025)")
-print("  than the campaign date fields cover. Campaign dates aren't reliable")
-print("  event boundaries in this dataset.")
+print("  56.4% outside on the full dataset — too large for timezone drift.")
+print("  Campaign dates aren't reliable event boundaries here; not used as filters.")
 
-# ── 5. Budget fanout ──────────────────────────────────────────────────────────
+# --- 5. budget fanout ---
 print("\n[5] BUDGET FANOUT")
 print("    What happens when total_budget is joined to lower grains?")
 
@@ -173,6 +160,8 @@ ev_camp  = (events
     .merge(campaigns[["campaign_id","total_budget"]], on="campaign_id"))
 at_events = ev_camp["total_budget"].sum()
 
+# this one is nasty — PBI doesn't warn you, it just shows a $20B card
+# and you have to realize the grain is wrong yourself
 print(f"  Campaign grain (correct): ${correct:>18,.2f}  ×1")
 print(f"  Joined to ads grain:      ${at_ads:>18,.2f}  ×{at_ads/correct:.0f}")
 print(f"  Joined to events grain:   ${at_events:>18,.2f}  ×{at_events/correct:,.0f}")
@@ -180,7 +169,7 @@ print()
 print("  All budget measures in the report pull from campaigns table only.")
 print("  Never joined down or summed at a lower grain.")
 
-# ── 6. Event type distribution ────────────────────────────────────────────────
+# --- 6. event type distribution ---
 print("\n[6] EVENT TYPE DISTRIBUTION")
 
 total = len(events)
@@ -189,14 +178,14 @@ for event_type, count in et.items():
     bar = "█" * int(count / total * 40)
     print(f"  {event_type:<12}: {count:>8,}  ({count/total:5.1%})  {bar}")
 
-# ── 7. Platform split ─────────────────────────────────────────────────────────
+# --- 7. platform split ---
 print("\n[7] PLATFORM SPLIT")
 ev_ads = events.merge(ads[["ad_id","ad_platform"]], on="ad_id", how="left")
 plat_counts = ev_ads["ad_platform"].value_counts()
 for plat, n in plat_counts.items():
     print(f"  {plat}: {n:>8,}  ({n/len(ev_ads):.1%})")
 
-# ── 8. Per-platform KPI check (Comments/Shares verified per platform) ─────────
+# --- 8. per-platform KPI check ---
 print("\n[8] KPI SPOT-CHECK — PER PLATFORM (verified against raw data)")
 
 for platform in ["Facebook", "Instagram"]:
@@ -215,7 +204,7 @@ for platform in ["Facebook", "Instagram"]:
     print(f"\n  {platform.upper()}")
     print(f"  Impressions    : {p_imp:>10,}")
     print(f"  Clicks         : {p_clk:>10,}")
-    print(f"  Comments       : {p_com:>10,}   (excluded from Engagements? No — included)")
+    print(f"  Comments       : {p_com:>10,}   (included in Engagements)")
     print(f"  Shares         : {p_shr:>10,}   (included in Engagements)")
     print(f"  Likes          : {p_lik:>10,}   (tracked; excluded from Engagements)")
     print(f"  Purchases      : {p_pur:>10,}")
@@ -225,18 +214,7 @@ for platform in ["Facebook", "Instagram"]:
     print(f"  Conversion Rate: {p_cvr:>10.2%}")
     print(f"  Purchase Rate  : {p_pr:>10.2%}")
 
-print()
-print("  Full source reference (Facebook)  : 215,972 imp / 25,389 clk / 2,632 com / 1,275 shr / 29,296 eng / 1,323 pur")
-print("  CTR=11.76%  ER=13.56%  CVR=5.21%  PR=0.61%")
-print("  Full source reference (Instagram) : 123,840 imp / 14,690 clk / 1,476 com /   682 shr / 16,848 eng /   708 pur")
-print("  CTR=11.86%  ER=13.60%  CVR=4.82%  PR=0.57%")
-print()
-print("  NOTE: Earlier versions of this script and the README incorrectly stated")
-print("  FB Comments=2,680 / IG Comments=1,428 / FB Shares=1,227 / IG Shares=730.")
-print("  Correct values: FB Comments=2,632 / IG Comments=1,476 / FB Shares=1,275 / IG Shares=682.")
-print("  Combined totals (4,108 comments / 1,957 shares) are unaffected.")
-
-# ── Done ──────────────────────────────────────────────────────────────────────
+# --- done ---
 print()
 print("=" * 65)
 print("Audit complete.")
