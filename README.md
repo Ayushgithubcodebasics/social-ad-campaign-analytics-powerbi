@@ -1,6 +1,6 @@
 # Meta Ad Campaign Analytics — Power BI
 
-**Stack:** Python · Power BI · Power Query · DAX  
+**Stack:** Python · SQL · SQLite · Power BI · Power Query · DAX  
 **Data scale:** 400,000 ad events · 50 campaigns · 200 ads · 9,841 users · May–August 2025
 
 **[→ Live dashboard](https://app.powerbi.com/view?r=eyJrIjoiMmVhYTNkZTUtYmEzOS00YmYzLWI4MmMtZWI5YjJjZTg0MGI3IiwidCI6ImM2ZTU0OWIzLTVmNDUtNDAzMi1hYWU5LWQ0MjQ0ZGM1YjJjNCJ9)**
@@ -133,6 +133,32 @@ The dayparting finding was also deliberate. The honest answer was that the data 
 
 ---
 
+## SQL Analysis Layer
+
+The raw CSVs are loaded into SQLite via `data/load_to_sqlite.py`, enabling the five queries in `data/analysis.sql` to cross-validate every dashboard finding independently of Power BI.
+
+| Query | Business question | Key SQL techniques |
+|---|---|---|
+| Q1 — Full funnel by platform | Validates the headline CTR, CVR, and engagement rate KPIs | CTE, `CASE WHEN`, `NULLIF`, multi-metric aggregation |
+| Q2 — Format CVR ranked per platform | Surfaces the Stories vs Carousel insight by platform | `RANK() OVER (PARTITION BY)`, multi-table `JOIN` |
+| Q3 — Campaign performance ranked | Identifies CVR outliers — Campaign_32_Summer should rank worst | `RANK() OVER`, CPA calculation, `HAVING` |
+| Q4 — Geo efficiency by country | Validates the Germany vs Canada/India CVR gap | `JOIN`, `HAVING`, `RANK() OVER` |
+| Q5 — Targeting vs actual gender | Quantifies the targeting inversion using `UNION ALL` | `UNION ALL`, window `SUM OVER`, `COUNT DISTINCT` |
+
+To run:
+
+```bash
+# Load raw CSVs into SQLite
+python data/load_to_sqlite.py
+
+# Run all queries
+sqlite3 data/ad_analysis.db < data/analysis.sql
+```
+
+Q1 output cross-checks directly against the dashboard: Facebook CTR 11.76%, CVR 5.21% — Instagram CTR 11.86%, CVR 4.82%.
+
+---
+
 ## Data Quality Issues Found
 
 Three issues caught before building any visuals — all documented and accounted for in the analysis:
@@ -192,6 +218,8 @@ social-ad-campaign-analytics-powerbi/
 ├── meta_ad_performance.pbix          ← Power BI working file
 ├── data/
 │   ├── audit.py                      ← Python data quality checks
+│   ├── analysis.sql                  ← SQL: funnel, format, campaign, geo, gender queries
+│   ├── load_to_sqlite.py             ← loads raw CSVs into SQLite for SQL analysis
 │   ├── raw/                          ← full source CSVs (400K events)
 │   └── sample/                       ← 2K-row clean subset
 ├── docs/
