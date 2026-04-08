@@ -140,16 +140,22 @@ That's ~9× more spend per conversion. High CTR proves the creative works. Near-
 
 ## Recommendations
 
-**1. Fix the post-click experience first.** The ads are getting clicks at 6–10× the industry CTR benchmark. The issue is what happens after. A 1pp improvement in Facebook CVR = ~254 more purchases = $317,009 in recovered value at the blended CPA, from the same budget. Start with Campaign_32_Summer — it's the clearest example: 12.57% CTR, 0.93% CVR. Audit the landing page and offer independently.
+**1. Fix the post-click experience first** *(for: Performance Marketing / Landing Page team)*  
+The ads are getting clicks at 6–10× the industry CTR benchmark. The issue is what happens after the click. A 1pp improvement in Facebook CVR = ~254 more purchases = **$317,009 in recovered value at the blended CPA, from the same budget**. Start with Campaign_32_Summer — it's the clearest example: 12.57% CTR, 0.93% CVR. Audit the landing page and offer independently; this is not a creative problem.
 
-**2. Run platform-specific format strategies.**
-- Facebook: more Stories (best CVR at 5.52%) and Video (best CTR + engagement rate). Less Image — it ranks last on CVR on Facebook.
-- Instagram: more Carousel for conversion campaigns (5.23% CVR, beats Stories). Image if you're running awareness. Don't import Facebook's "Stories first" logic to Instagram.
+**2. Run platform-specific format strategies** *(for: Media Planning / Creative Strategy team)*  
+A uniform cross-platform format approach misallocates budget. Facebook and Instagram respond to formats differently:
+- **Facebook:** prioritise Stories (best CVR at 5.52%, 33% of FB impressions) and Video (best CTR 11.88% + ER 13.74%). Reduce Image allocation — it ranks last on CVR (4.91%).
+- **Instagram:** prioritise Carousel for conversion campaigns (5.23% CVR, beats Stories). Use Image for awareness objectives (CTR 12.17%). Do not import Facebook's "Stories first" logic to Instagram.
 
-**3. Shift geo budget from Germany to India and Canada.** Germany underperforms on both CVR and CTR. Canada and India outperform it on efficiency. The math is straightforward.
+**3. Shift geo budget from Germany to India and Canada** *(for: Campaign Operations / Geo-targeting team)*  
+Germany is the clear underperformer: lowest CVR (4.86%) and second-lowest CTR of the five major markets. Canada has the highest CVR (5.44%) and India the highest CTR (12.03%). Reallocating Germany's budget to these two markets produces more purchases without identifying a new audience.
 
-**4. Test male-targeted creative.** 55.2% of actual engagers are male. 21.7% of ad targeting is male-targeted. Add male-targeted variants to currently female-only campaigns, measure CVR difference, then decide.
+**4. Test male-targeted creative** *(for: Creative Strategy / Audience team)*  
+55.2% of actual Facebook engagers are male. Only 21.7% of ad targeting is male-directed. This inversion suggests either male users are engaging with female-targeted creative at unusually high rates (a targeting inefficiency) or the small male-targeted allocation is disproportionately efficient. Either way: add male-targeted variants to the three largest female-only campaigns, run for 2 weeks, compare CVR.
 
-**5. Don't spend time on dayparting.** The data doesn't support it. All time slots and days are within noise range of each other.
+**5. Deprioritise dayparting optimisation** *(for: Campaign Operations team)*  
+The data does not support it. All time-of-day segments are within 1.5% of each other (Afternoon 11,610 vs Night 11,440 engagements). All seven weekdays are within 3.4% of each other. Budget allocated to scheduling optimisation would produce noise, not signal. Redirect that effort to the post-click experience (Recommendation 1).
 
-**6. Campaign_32_Summer needs its own investigation.** It's not a creative problem, it's a post-click problem. Audit the destination independently.
+**6. Commission a standalone audit of Campaign_32_Summer** *(for: Performance Marketing team)*  
+12.57% CTR, 0.93% CVR. That is 107 clicks per purchase, vs. 12 clicks per purchase for Campaign_14_Summer. The creative clearly works — the destination clearly does not. Audit the landing page, offer, and checkout flow independently before the next campaign flight.
